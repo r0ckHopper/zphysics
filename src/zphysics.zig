@@ -1547,7 +1547,7 @@ pub const PhysicsSystem = opaque {
         const ptr = c.JPC_PhysicsSystem_GetBodiesUnsafe(
             @as(*c.JPC_PhysicsSystem, @ptrFromInt(@intFromPtr(physics_system))),
         );
-        return @as([*]const *const Body, @ptrCast(ptr))[0..physics_system.getNumBodies()];
+        return @as([*]const *const Body, @ptrCast(ptr))[0..physics_system.getMaxBodies()];
     }
     /// NOTE: Advanced. This function is *not* protected by a lock, use with care!
     pub fn getBodiesMutUnsafe(physics_system: *PhysicsSystem) []const *Body {
