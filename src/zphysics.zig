@@ -4516,8 +4516,53 @@ test "zphysics.body.basic" {
     try expect(physics_system.getNumActiveBodies() == 0);
 }
 
-test "zphysics.body.motion" {
+test "zphysics.body.getBodiesUnsafe_after_destroy" {
     try init(std.testing.allocator, .{});
+    defer deinit();
+
+    const physics_system = try PhysicsSystem.create(
+        @as(*const BroadPhaseLayerInterface, @ptrCast(&test_cb1.MyBroadphaseLayerInterface.init())),
+        @as(*const ObjectVsBroadPhaseLayerFilter, @ptrCast(&test_cb1.MyObjectVsBroadPhaseLayerFilter{})),
+        @as(*const ObjectLayerPairFilter, @ptrCast(&test_cb1.MyObjectLayerPairFilter{})),
+        .{ .max_bodies = 1024, .num_body_mutexes = 0, .max_body_pairs = 1024, .max_contact_constraints = 1024 },
+    );
+    defer physics_system.destroy();
+
+    const body_interface = physics_system.getBodyInterfaceMut();
+
+    const shape_settings = try BoxShapeSettings.create(.{ 1.0, 1.0, 1.0 });
+    defer shape_settings.asShapeSettings().release();
+    const shape = try shape_settings.asShapeSettings().createShape();
+    defer shape.release();
+
+    const settings = BodyCreationSettings{
+        .position = .{ 0, 0, 0, 1 },
+        .rotation = .{ 0, 0, 0, 1 },
+        .shape = shape,
+        .motion_type = .static,
+        .object_layer = test_cb1.object_layers.non_moving,
+    };
+
+    const b0 = try body_interface.createAndAddBody(settings, .activate);
+    const b1 = try body_interface.createAndAddBody(settings, .activate);
+    const b2 = try body_interface.createAndAddBody(settings, .activate);
+
+    _ = b0; //just to rid of compiler error
+
+    body_interface.removeBody(b1);
+    body_interface.destroyBody(b1);
+    
+    try expect(physics_system.getNumBodies() == 2);
+
+    const all_bodies = physics_system.getBodiesUnsafe();
+
+    //following should not throw panic
+    //zig does not have panic handler for unit tests so best we can do is test happy path or crash program
+    _ = tryGetBody(all_bodies, b2);
+}
+
+test "zphysics.body.motion" {
+    try init(std.testing.allocator, .{});   
     defer deinit();
 
     const my_broad_phase_layer_interface = test_cb1.MyBroadphaseLayerInterface.init();
