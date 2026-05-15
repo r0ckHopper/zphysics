@@ -1552,7 +1552,7 @@ pub const PhysicsSystem = opaque {
     /// NOTE: Advanced. This function is *not* protected by a lock, use with care!
     pub fn getBodiesMutUnsafe(physics_system: *PhysicsSystem) []const *Body {
         const ptr = c.JPC_PhysicsSystem_GetBodiesUnsafe(@as(*c.JPC_PhysicsSystem, @ptrCast(physics_system)));
-        return @as([*]const *Body, @ptrCast(ptr))[0..physics_system.getNumBodies()];
+        return @as([*]const *Body, @ptrCast(ptr))[0..physics_system.getMaxBodies()];
     }
 };
 //--------------------------------------------------------------------------------------------------
@@ -4554,7 +4554,7 @@ test "zphysics.body.getBodiesUnsafe_after_destroy" {
     
     try expect(physics_system.getNumBodies() == 2);
 
-    const all_bodies = physics_system.getBodiesUnsafe();
+    const all_bodies = physics_system.getBodiesMutUnsafe();
 
     //following should not throw panic
     //zig does not have panic handler for unit tests so best we can do is test happy path or crash program
