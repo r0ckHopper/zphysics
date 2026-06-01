@@ -4520,11 +4520,20 @@ test "zphysics.body.getBodiesUnsafe_after_destroy" {
     try init(std.testing.allocator, .{});
     defer deinit();
 
+    const my_broad_phase_layer_interface = test_cb1.MyBroadphaseLayerInterface.init();
+    const my_broad_phase_should_collide = test_cb1.MyObjectVsBroadPhaseLayerFilter{};
+    const my_object_should_collide = test_cb1.MyObjectLayerPairFilter{};
+
     const physics_system = try PhysicsSystem.create(
-        @as(*const BroadPhaseLayerInterface, @ptrCast(&test_cb1.MyBroadphaseLayerInterface.init())),
-        @as(*const ObjectVsBroadPhaseLayerFilter, @ptrCast(&test_cb1.MyObjectVsBroadPhaseLayerFilter{})),
-        @as(*const ObjectLayerPairFilter, @ptrCast(&test_cb1.MyObjectLayerPairFilter{})),
-        .{ .max_bodies = 1024, .num_body_mutexes = 0, .max_body_pairs = 1024, .max_contact_constraints = 1024 },
+        @as(*const BroadPhaseLayerInterface, @ptrCast(&my_broad_phase_layer_interface)),
+        @as(*const ObjectVsBroadPhaseLayerFilter, @ptrCast(&my_broad_phase_should_collide)),
+        @as(*const ObjectLayerPairFilter, @ptrCast(&my_object_should_collide)),
+        .{ 
+            .max_bodies = 1024,
+            .num_body_mutexes = 0, 
+            .max_body_pairs = 1024, 
+            .max_contact_constraints = 1024 
+        },
     );
     defer physics_system.destroy();
 
