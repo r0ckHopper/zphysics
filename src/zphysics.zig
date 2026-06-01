@@ -4556,7 +4556,7 @@ test "zphysics.body.getBodiesUnsafe_after_destroy" {
     const b1 = try body_interface.createAndAddBody(settings, .activate);
     const b2 = try body_interface.createAndAddBody(settings, .activate);
 
-    _ = b0; //just to rid of compiler error
+    _ = b0; // silence unused variable warning for testing
 
     body_interface.removeBody(b1);
     body_interface.destroyBody(b1);
